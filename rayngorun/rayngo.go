@@ -19,7 +19,7 @@ func main() {
 	for y := 0; y < height; y += 1 {
 		for x := 0; x < width; x += 1 {
 			ray := rayGen(x, y, width, height, 60)
-			img.Set(x, y, background_color(ray.Direction))
+			img.Set(x, height-y, background_color(ray))
 		}
 	}
 	
@@ -33,19 +33,34 @@ func main() {
 
 func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {
 	// Calculate the eye position from the width, height, and field of view.
-	// Assume {0,0,0} is the bottom left pixel of the screen, 
+	// Assume {0,0,0} is the bottom left pixel of the screen
 	eyeX := float64(width-1) / 2
 	eyeY := float64(height-1) / 2
 	eyeZ := eyeX / math.Tan(float64(fov)*math.Pi/180)
 	eye := vmath.Vec3{eyeX, eyeY, eyeZ}
 
-	// When returning the ray, we want the eye position to be the origin.
+	// When returning the ray, make the origin some interesting location in world space.
 	screenPos := vmath.Vec3{float64(x), float64(y), 0}
-	return rayngo.Ray{vmath.Vec3{0,0,0}, screenPos.Sub(eye).Normalize()}
+	return rayngo.Ray{vmath.Vec3{0,5,0}, screenPos.Sub(eye).Normalize()}
 }
 
-func background_color(dir vmath.Vec3) color.RGBA {
+func background_color(ray rayngo.Ray) color.RGBA {
 	// TODO Correct for vectors that point straight up
-	angle := (math.Atan(float64(dir.Y)/math.Abs(float64(dir.Z)))/math.Pi) + 0.5
-	return color.RGBA{0, 0, uint8(255 * angle), 255}
+	
+	dir := ray.Direction
+	// Check for an intersection with the floor. If Y points downward, it must intersect eventually.
+	if dir.Y < 0 {
+		// Determine the colour of the floor at the intersection point.
+		t := (0 - ray.Origin.Y) / dir.Y
+		inter := ray.Origin.Add(dir.Scale(t))
+		if math.Mod((math.Ceil(inter.X) + math.Ceil(inter.Z)), 2) == 0 {
+			return color.RGBA{128, 0, 0, 255}
+		} else {
+			return color.RGBA{128, 128, 128, 255}
+		}
+	} else {
+		// Otherwise, we're in the sky.
+		angle := (math.Atan(dir.Y/math.Abs(dir.Z))/math.Pi) + 0.5
+		return color.RGBA{0, 0, uint8(255 - (255 * angle)), 255}
+	}
 }
