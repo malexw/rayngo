@@ -16,10 +16,12 @@ func main() {
 	width, height := 800, 480
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
+	sphere := rayngo.Shape{vmath.Vec3{3.0, 5.0, -10.0}, 1.0, color.RGBA{128, 128, 0, 255}}
+
 	for y := 0; y < height; y += 1 {
 		for x := 0; x < width; x += 1 {
 			ray := rayGen(x, y, width, height, 60)
-			img.Set(x, height-y, background_color(ray))
+			img.Set(x, height-y, collision(ray, &sphere))
 		}
 	}
 	
@@ -42,6 +44,16 @@ func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {
 	// When returning the ray, make the origin some interesting location in world space.
 	screenPos := vmath.Vec3{float64(x), float64(y), 0}
 	return rayngo.Ray{vmath.Vec3{0,5,0}, screenPos.Sub(eye).Normalize()}
+}
+
+func collision(ray rayngo.Ray, s *rayngo.Shape) color.RGBA {
+	// For every object in the scene, check if the ray hits it. If it does, return the color of the object.
+	if s.RayCollision(ray) {
+		return s.Color
+	} else {
+		return background_color(ray)
+	}
+	// Otherwise, return the color of the background.
 }
 
 func background_color(ray rayngo.Ray) color.RGBA {
