@@ -16,12 +16,13 @@ func main() {
 	width, height := 800, 480
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	sphere := rayngo.Shape{vmath.Vec3{3.0, 5.0, -10.0}, 1.0, color.RGBA{128, 128, 0, 255}}
+	//sphere := rayngo.Shape{vmath.Vec3{3.0, 5.0, -10.0}, 1.0, color.RGBA{128, 128, 0, 255}}
+	scene := rayngo.NewScene()
 
 	for y := 0; y < height; y += 1 {
 		for x := 0; x < width; x += 1 {
 			ray := rayGen(x, y, width, height, 60)
-			img.Set(x, height-y, collision(ray, &sphere))
+			img.Set(x, height-y, collision(ray, scene))
 		}
 	}
 	
@@ -46,14 +47,31 @@ func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {
 	return rayngo.Ray{vmath.Vec3{0,5,0}, screenPos.Sub(eye).Normalize()}
 }
 
-func collision(ray rayngo.Ray, s *rayngo.Shape) color.RGBA {
+func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
+	c := color.RGBA{0,0,0,255}
+	objHit := false
+
 	// For every object in the scene, check if the ray hits it. If it does, return the color of the object.
-	if s.RayCollision(ray) {
-		return s.Color
-	} else {
-		return background_color(ray)
+	for _, shp := range scene.Shapes {
+		intersects, location := shp.RayCollision(ray)
+		if intersects {
+			norm := (location.Sub(shp.Position)).Normalize()
+			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
+			lightness := norm.Dot(dirToLight)
+			if lightness < 0 {
+				lightness = 0
+			}
+			c = vec3ToColor(shp.Color.Scale(lightness))
+			objHit = true
+		}
 	}
+
 	// Otherwise, return the color of the background.
+	if !objHit {
+		c = background_color(ray)
+	}
+
+	return c
 }
 
 func background_color(ray rayngo.Ray) color.RGBA {
@@ -75,4 +93,8 @@ func background_color(ray rayngo.Ray) color.RGBA {
 		angle := (math.Atan(dir.Y/math.Abs(dir.Z))/math.Pi) + 0.5
 		return color.RGBA{0, 0, uint8(255 - (255 * angle)), 255}
 	}
+}
+
+func vec3ToColor(v vmath.Vec3) color.RGBA {
+	return color.RGBA{uint8(v.X), uint8(v.Y), uint8(v.Z), 255}
 }
