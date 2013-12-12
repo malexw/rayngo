@@ -44,7 +44,7 @@ func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {
 
 	// When returning the ray, make the origin some interesting location in world space.
 	screenPos := vmath.Vec3{float64(x), float64(y), 0}
-	return rayngo.Ray{vmath.Vec3{0,5,0}, screenPos.Sub(eye).Normalize()}
+	return rayngo.Ray{vmath.Vec3{0,3,0}, screenPos.Sub(eye).Normalize()}
 }
 
 func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
