@@ -16,10 +16,10 @@ func NewScene() *Scene {
 		Shapes: make([]Shape, 1, 1),
 	}
 
-	s.LightSrc = Light{vmath.Vec3{8.0, 10.0, 5.0}}
-	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{1.0, 1.0, -13.0}, 2.5, vmath.Vec3{0, 0, 192}})
-	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{3.0, 0.5, -7.0}, 1.0, vmath.Vec3{0, 128, 0}})
-	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{-4.0, 1.0, -9.0}, 2.0, vmath.Vec3{192, 0, 0}})
+	s.LightSrc = Light{vmath.Vec3{8.0, 7.0, 0.0}}
+	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{1.0, 2.5, -13.0}, 2.5, vmath.Vec3{0, 0, 0.75}})
+	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{3.0, 1.0, -7.0}, 1.0, vmath.Vec3{0, 0.5, 0}})
+	s.Shapes = append(s.Shapes, Shape{vmath.Vec3{-4.0, 2.0, -9.0}, 2.0, vmath.Vec3{0.75, 0, 0}})
 
 	return &s
 }
@@ -31,7 +31,7 @@ func (s *Scene) BackgroundColor(r Ray) color.RGBA {
 	// Check for an intersection with the floor. If Y points downward, it must intersect eventually.
 	if dir.Y < 0 {
 		// First find the intersection point with the floor.
-		t := (0 - r.Origin.Y) / dir.Y
+		t := (0 -r.Origin.Y) / dir.Y
 		inter := r.Origin.Add(dir.Scale(t))
 
 		// Check to see if we're in shadow or not.
