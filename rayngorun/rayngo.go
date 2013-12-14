@@ -55,24 +55,24 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 	for _, prm := range scene.Primitives {
 		intersects, location := prm.Geometry.RayCollision(ray)
 		if intersects {
+			// Ambient term
+			ambColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.AmbientCoeff)
+
 			// Diffuse term
 			norm := (location.Sub(prm.Geometry.Position)).Normalize()
 			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
-			lightness := norm.Dot(dirToLight)
-			if lightness < 0.2 {
-				lightness = 0.2
-			}
+			lightness := math.Max(0, norm.Dot(dirToLight))
+			diffColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
 
 			// Specular term
 			reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
-			specular := reflected.Dot(ray.Direction.Scale(-1))
-			if specular < 0 {
-				specular = 0
-			}
-			// TODO Get the specular color from the light source
-			specColor := scene.LightSrc.Diffuse.Attenuate(0.8).Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+			specular := math.Max(0, reflected.Dot(ray.Direction.Scale(-1)))
 
-			c = prm.Mat.Diffuse.Attenuate(lightness).Add(specColor).ToImageColor()
+			// TODO Use LightSrc.Specular color once it exists instead of LightSrc.Diffuse
+			specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
+			specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+
+			c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
 			objHit = true
 		}
 	}
