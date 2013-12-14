@@ -6,4 +6,5 @@ import (
 
 type Light struct {
 	Position vmath.Vec3
+	Diffuse Color
 }

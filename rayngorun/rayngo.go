@@ -52,11 +52,11 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 	objHit := false
 
 	// For every object in the scene, check if the ray hits it. If it does, return the color of the object.
-	for _, shp := range scene.Shapes {
-		intersects, location := shp.RayCollision(ray)
+	for _, prm := range scene.Primitives {
+		intersects, location := prm.Geometry.RayCollision(ray)
 		if intersects {
 			// Diffuse term
-			norm := (location.Sub(shp.Position)).Normalize()
+			norm := (location.Sub(prm.Geometry.Position)).Normalize()
 			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
 			lightness := norm.Dot(dirToLight)
 			if lightness < 0.2 {
@@ -70,9 +70,9 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 				specular = 0
 			}
 			// TODO Get the specular color from the light source
-			specColor := vmath.Vec3{1.0, 1.0, 1.0}.Scale(0.8).Scale(math.Pow(specular, 20))
+			specColor := scene.LightSrc.Diffuse.Attenuate(0.8).Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
 
-			c = vec3ToColor(shp.Color.Scale(lightness).Add(specColor))
+			c = prm.Mat.Diffuse.Attenuate(lightness).Add(specColor).ToImageColor()
 			objHit = true
 		}
 	}

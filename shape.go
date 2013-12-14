@@ -9,7 +9,6 @@ import (
 type Shape struct {
 	Position vmath.Vec3
 	Radius float64
-	Color vmath.Vec3
 }
 
 func (s Shape) RayCollision(r Ray) (bool, vmath.Vec3) {
