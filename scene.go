@@ -59,7 +59,7 @@ func (s *Scene) BackgroundColor(r Ray) color.RGBA {
 func (s *Scene) isShadowed(r Ray) bool {
 	// For every object in the scene, check if the ray hits it.
 	for _, prm := range s.Primitives {
-		intersects, _ := prm.Geometry.RayCollision(r)
+		intersects, _, _ := prm.Geometry.RayCollision(r)
 		if intersects {
 			return true
 		}
