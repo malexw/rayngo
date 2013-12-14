@@ -54,14 +54,13 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 
 	// For every object in the scene, check if the ray hits it. If it does, return the color of the object.
 	for _, prm := range scene.Primitives {
-		intersects, distance, location := prm.Geometry.RayCollision(ray)
+		intersects, distance, location, norm := prm.Geometry.RayCollision(ray)
 		if intersects && distance < nearest {
 			nearest = distance
 			// Ambient term
 			ambColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.AmbientCoeff)
 
 			// Diffuse term
-			norm := (location.Sub(prm.Geometry.Position)).Normalize()
 			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
 			lightness := math.Max(0, norm.Dot(dirToLight))
 			diffColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
