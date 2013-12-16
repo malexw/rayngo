@@ -57,8 +57,10 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 		intersects, distance, location, norm := prm.Geometry.RayCollision(ray)
 		if intersects && distance < nearest {
 			nearest = distance
+			// TODO Convert to texture coordinates, and use those to sample
+			rawColor := prm.Mat.Sample(location.X, location.Z)
 			// Ambient term
-			ambColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.AmbientCoeff)
+			ambColor := rawColor.Attenuate(scene.LightSrc.AmbientCoeff)
 
 			// Check and see if the intersection point is in a shadow. If so, skip the diffuse and
 			// specular terms.
@@ -70,7 +72,7 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 			if !inShadow {
 				// Diffuse term
 				lightness := math.Max(0, norm.Dot(dirToLight))
-				diffColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
+				diffColor := rawColor.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
 
 				// Specular term
 				reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
