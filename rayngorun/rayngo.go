@@ -60,20 +60,30 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 			// Ambient term
 			ambColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.AmbientCoeff)
 
-			// Diffuse term
+			// Check and see if the intersection point is in a shadow. If so, skip the diffuse and
+			// specular terms.
 			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
-			lightness := math.Max(0, norm.Dot(dirToLight))
-			diffColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
+			// Scale by a small term in the direction of the light source to prevent intersections with self
+			sray := rayngo.Ray{location.Add(dirToLight.Scale(0.0001)), dirToLight}
+			inShadow := scene.IsShadowed(sray)
 
-			// Specular term
-			reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
-			specular := math.Max(0, reflected.Dot(ray.Direction.Scale(-1)))
+			if !inShadow {
+				// Diffuse term
+				lightness := math.Max(0, norm.Dot(dirToLight))
+				diffColor := prm.Mat.Diffuse.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
 
-			// TODO Use LightSrc.Specular color once it exists instead of LightSrc.Diffuse
-			specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
-			specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+				// Specular term
+				reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
+				specular := math.Max(0, reflected.Dot(ray.Direction.Scale(-1)))
 
-			c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
+				// TODO Use LightSrc.Specular color once it exists instead of LightSrc.Diffuse
+				specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
+				specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+
+				c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
+			} else {
+				c = ambColor.ToImageColor()
+			}
 			objHit = true
 		}
 	}
@@ -86,6 +96,6 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 	return c
 }
 
-func vec3ToColor(v vmath.Vec3) color.RGBA {
-	return color.RGBA{uint8(math.Min(v.X, 1.0)*255), uint8(math.Min(v.Y, 1.0)*255), uint8(math.Min(v.Z, 1.0)*255), 255}
-}
+// func vec3ToColor(v vmath.Vec3) color.RGBA {
+// 	return color.RGBA{uint8(math.Min(v.X, 1.0)*255), uint8(math.Min(v.Y, 1.0)*255), uint8(math.Min(v.Z, 1.0)*255), 255}
+// }

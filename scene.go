@@ -36,7 +36,7 @@ func (s *Scene) BackgroundColor(r Ray) color.RGBA {
 
 		// Check to see if we're in shadow or not.
 		sray := Ray{inter, s.LightSrc.Position.Sub(inter).Normalize()}
-		inShadow := s.isShadowed(sray)
+		inShadow := s.IsShadowed(sray)
 		brightness := 1.0
 		if inShadow {
 			brightness = 0.2
@@ -56,7 +56,7 @@ func (s *Scene) BackgroundColor(r Ray) color.RGBA {
 	}
 }
 
-func (s *Scene) isShadowed(r Ray) bool {
+func (s *Scene) IsShadowed(r Ray) bool {
 	// For every object in the scene, check if the ray hits it.
 	for _, prm := range s.Primitives {
 		intersects, _, _, _ := prm.Geometry.RayCollision(r)
