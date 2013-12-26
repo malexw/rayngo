@@ -23,13 +23,10 @@ func NewScene() *Scene {
 	s.Primitives = append(s.Primitives, *(&Primitive{}).AddShape(Plane{vmath.Vec3{0.0, 1.0, 0.0}, 0.0}).SetMaterial(Material{Color{0.5, 0.5, 0.5, 1.0}, 10, true}))
 
 	pyrMat := Material{Color{1.0, 0.6, 0.2, 1.0}, 200, false}
-	tri1 := Triangle{[3]vmath.Vec3{vmath.Vec3{0.5, 0.0, 0.5}, vmath.Vec3{0.0, 1.0, 0.0}, vmath.Vec3{-0.5, 0.0, 0.5}}}
-	tri2 := Triangle{[3]vmath.Vec3{vmath.Vec3{0.5, 0.0, -0.5}, vmath.Vec3{0.0, 1.0, 0.0}, vmath.Vec3{0.5, 0.0, 0.5}}}
-	tri3 := Triangle{[3]vmath.Vec3{vmath.Vec3{-0.5, 0.0, -0.5}, vmath.Vec3{0.0, 1.0, 0.0}, vmath.Vec3{0.5, 0.0, -0.5}}}
-	tri4 := Triangle{[3]vmath.Vec3{vmath.Vec3{-0.5, 0.0, 0.5}, vmath.Vec3{0.0, 1.0, 0.0}, vmath.Vec3{-0.5, 0.0, -0.5}}}
-	pyrGeom := (&Primitive{}).AddShape(tri1).AddShape(tri2).AddShape(tri3).AddShape(tri4).SetMaterial(pyrMat)
-	pyrGeom.SetSqt(vmath.Vec3{8.0, 8.0, 8.0}, vmath.QuaternionFromAxisAngle(vmath.Vec3{0.0, 1.0, 0.0}, 50), vmath.Vec3{-10.0, 0.0, -21.0})
-	s.Primitives = append(s.Primitives, *pyrGeom)
+	pyramid := NewPrimitiveFromObj("res/meshes/pyramid.obj")
+	pyramid.SetMaterial(pyrMat)
+	pyramid.SetSqt(vmath.Vec3{8.0, 8.0, 8.0}, vmath.QuaternionFromAxisAngle(vmath.Vec3{0.0, 1.0, 0.0}, 50), vmath.Vec3{-10.0, 0.0, -21.0})
+	s.Primitives = append(s.Primitives, *pyramid)
 
 	return &s
 }
