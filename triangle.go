@@ -43,3 +43,9 @@ func (tr Triangle) RayCollision(r Ray) (bool, float64, vmath.Vec3, vmath.Vec3) {
 	//u := 1.0 - v - w
 	return true, t, r.Origin.Add(r.Direction.Scale(t)), normal.Normalize()
 }
+
+func (tr Triangle) Transform(m *vmath.Matrix4) Shape {
+	return Triangle{[3]vmath.Vec3{m.Transform(tr.Vertices[0]),
+								  m.Transform(tr.Vertices[1]),
+								  m.Transform(tr.Vertices[2])}}
+}

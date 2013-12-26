@@ -25,7 +25,7 @@ func main() {
 			img.Set(x, height-y, collision(ray, scene))
 		}
 	}
-	
+
 	outFile, err := os.Create("test.png")
 	if err != nil {
 		fmt.Printf("File create failed.\n")
@@ -54,39 +54,42 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 
 	// For every object in the scene, check if the ray hits it. If it does, return the color of the object.
 	for _, prm := range scene.Primitives {
-		intersects, distance, location, norm := prm.Geometry.RayCollision(ray)
-		if intersects && distance < nearest {
-			nearest = distance
-			// TODO Convert to texture coordinates, and use those to sample
-			rawColor := prm.Mat.Sample(location.X, location.Z)
-			// Ambient term
-			ambColor := rawColor.Attenuate(scene.LightSrc.AmbientCoeff)
+		for shp := prm.Geometry.Front(); shp != nil; shp = shp.Next() {
 
-			// Check and see if the intersection point is in a shadow. If so, skip the diffuse and
-			// specular terms.
-			dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
-			// Scale by a small term in the direction of the light source to prevent intersections with self
-			sray := rayngo.Ray{location.Add(dirToLight.Scale(0.0001)), dirToLight}
-			inShadow := scene.IsShadowed(sray)
+			intersects, distance, location, norm := shp.Value.(rayngo.Shape).RayCollision(ray)
+			if intersects && distance < nearest {
+				nearest = distance
+				// TODO Convert to texture coordinates, and use those to sample
+				rawColor := prm.Mat.Sample(location.X, location.Z)
+				// Ambient term
+				ambColor := rawColor.Attenuate(scene.LightSrc.AmbientCoeff)
 
-			if !inShadow {
-				// Diffuse term
-				lightness := math.Max(0, norm.Dot(dirToLight))
-				diffColor := rawColor.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
+				// Check and see if the intersection point is in a shadow. If so, skip the diffuse and
+				// specular terms.
+				dirToLight := (scene.LightSrc.Position.Sub(location)).Normalize()
+				// Scale by a small term in the direction of the light source to prevent intersections with self
+				sray := rayngo.Ray{location.Add(dirToLight.Scale(0.0001)), dirToLight}
+				inShadow := scene.IsShadowed(sray)
 
-				// Specular term
-				reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
-				specular := math.Max(0, reflected.Dot(ray.Direction.Scale(-1)))
+				if !inShadow {
+					// Diffuse term
+					lightness := math.Max(0, norm.Dot(dirToLight))
+					diffColor := rawColor.Attenuate(scene.LightSrc.DiffuseCoeff).Attenuate(lightness)
 
-				// TODO Use LightSrc.Specular color once it exists instead of LightSrc.Diffuse
-				specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
-				specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+					// Specular term
+					reflected := norm.Scale(2*dirToLight.Dot(norm)).Sub(dirToLight)
+					specular := math.Max(0, reflected.Dot(ray.Direction.Scale(-1)))
 
-				c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
-			} else {
-				c = ambColor.ToImageColor()
+					// TODO Use LightSrc.Specular color once it exists instead of LightSrc.Diffuse
+					specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
+					specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
+
+					c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
+				} else {
+					c = ambColor.ToImageColor()
+				}
+				objHit = true
 			}
-			objHit = true
 		}
 	}
 

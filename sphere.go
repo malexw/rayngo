@@ -26,3 +26,7 @@ func (s Sphere) RayCollision(r Ray) (bool, float64, vmath.Vec3, vmath.Vec3) {
 	normal := (intersection.Sub(s.Position)).Normalize()
 	return true, t, intersection, normal
 }
+
+func (s Sphere) Transform(m *vmath.Matrix4) Shape {
+	return Sphere{m.Transform(s.Position), s.Radius}
+}

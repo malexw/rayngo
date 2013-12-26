@@ -6,4 +6,5 @@ import (
 
 type Shape interface {
 	RayCollision(Ray) (bool, float64, vmath.Vec3, vmath.Vec3)
+	Transform(*vmath.Matrix4) Shape
 }

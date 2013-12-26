@@ -19,3 +19,8 @@ func (p Plane) RayCollision(r Ray) (bool, float64, vmath.Vec3, vmath.Vec3) {
 
 	return false, 0.0, vmath.Vec3{}, vmath.Vec3{}
 }
+
+func (p Plane) Transform(m *vmath.Matrix4) Shape {
+    // Do nothing here. Don't support transforms on planes because I don't want to figure out the math yet.
+    return Plane{p.Normal, p.Distance}
+}
