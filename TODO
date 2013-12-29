@@ -1,9 +1,8 @@
 TODO
 
+- More renderer options in the json file
 - Reflections
-- Depth of field
 - Soft shadows
 - Multiple lights in a scene
 - Define lights in the json file
-- More renderer options in the json file
 - Texture mapping

@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"image/png"
 	"math"
+	"math/rand"
 	"os"
 	"github.com/malexw/rayngo"
 	"github.com/malexw/vmath"
@@ -20,8 +20,15 @@ func main() {
 
 	for y := 0; y < height; y += 1 {
 		for x := 0; x < width; x += 1 {
+			// Final loop for depth of field. Do n samples per pixel and average the results
+			dofAtten := 1.0 / 64.0
+			accumulatedColor := rayngo.Color{0.0, 0.0, 0.0, 1.0}
 			ray := rayGen(x, y, width, height, 40)
-			img.Set(x, height-y, collision(ray, scene))
+			for n := 0; n < 64; n += 1 {
+				dofRay := dofRayGen(ray, 14)
+				accumulatedColor = accumulatedColor.Add(collision(dofRay, scene).Attenuate(dofAtten))
+			}
+			img.Set(x, height-y, accumulatedColor.ToImageColor())
 		}
 	}
 
@@ -46,8 +53,20 @@ func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {
 	return rayngo.Ray{vmath.Vec3{0,3,7}, screenPos.Sub(eye).Normalize()}
 }
 
-func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
-	c := color.RGBA{0,0,0,255}
+func dofRayGen(srcRay rayngo.Ray, fDist float64) rayngo.Ray {
+	fPoint := srcRay.Origin.Add(srcRay.Direction.Scale(fDist))
+
+	xRand := (rand.Float64() - 0.5) * 0.2
+	yRand := (rand.Float64() - 0.5) * 0.2
+	pert := vmath.Vec3{xRand, yRand, 0.0}
+	newSrc := srcRay.Origin.Add(pert)
+	newDirection := fPoint.Sub(newSrc)
+
+	return rayngo.Ray{newSrc, newDirection.Normalize()}
+}
+
+func collision(ray rayngo.Ray, scene *rayngo.Scene) rayngo.Color {
+	c := rayngo.Color{0.0, 0.0, 0.0, 1.0}
 	objHit := false
 	nearest := math.MaxFloat64
 
@@ -83,9 +102,9 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 					specColor := scene.LightSrc.Diffuse.Attenuate(scene.LightSrc.SpecularCoeff)
 					specColor = specColor.Attenuate(math.Pow(specular, float64(prm.Mat.Specularity)))
 
-					c = ambColor.Add(diffColor).Add(specColor).ToImageColor()
+					c = ambColor.Add(diffColor).Add(specColor)
 				} else {
-					c = ambColor.ToImageColor()
+					c = ambColor
 				}
 				objHit = true
 			}
@@ -99,7 +118,3 @@ func collision(ray rayngo.Ray, scene *rayngo.Scene) color.RGBA {
 
 	return c
 }
-
-// func vec3ToColor(v vmath.Vec3) color.RGBA {
-// 	return color.RGBA{uint8(math.Min(v.X, 1.0)*255), uint8(math.Min(v.Y, 1.0)*255), uint8(math.Min(v.Z, 1.0)*255), 255}
-// }

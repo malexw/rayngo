@@ -2,7 +2,6 @@ package rayngo
 
 import (
 	"encoding/json"
-	"image/color"
 	"io/ioutil"
 	"fmt"
 	"math"
@@ -93,12 +92,12 @@ func NewSceneFromFile(path string) *Scene {
 	return &scene
 }
 
-func (s *Scene) BackgroundColor(r Ray) color.RGBA {
+func (s *Scene) BackgroundColor(r Ray) Color {
 	// TODO Correct for vectors that point straight up
 
 	dir := r.Direction
 	angle := (math.Atan(dir.Y/math.Abs(dir.Z))/math.Pi) + 0.5
-	return color.RGBA{uint8(140 - (140 * angle)), uint8(208 - (208 * angle)), uint8(255 - (255 * angle)), 255}
+	return Color{0.55 - (0.55 * angle), 0.82 - (0.82 * angle), 1.0 - (1.0 * angle), 1.0}
 }
 
 func (s *Scene) IsShadowed(r Ray) bool {
