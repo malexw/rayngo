@@ -16,8 +16,7 @@ func main() {
 	width, height := 800, 480
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	//sphere := rayngo.Shape{vmath.Vec3{3.0, 5.0, -10.0}, 1.0, color.RGBA{128, 128, 0, 255}}
-	scene := rayngo.NewScene()
+	scene := rayngo.NewSceneFromFile("res/scene")
 
 	for y := 0; y < height; y += 1 {
 		for x := 0; x < width; x += 1 {
