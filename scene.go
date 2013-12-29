@@ -22,7 +22,7 @@ func NewScene() *Scene {
 	s.Primitives = append(s.Primitives, *(&Primitive{}).AddShape(Sphere{vmath.Vec3{-4.0, 1.5, -9.0}, 1.5}).SetMaterial(Material{Color{0.75, 0, 0, 1.0}, 100, false}))
 	s.Primitives = append(s.Primitives, *(&Primitive{}).AddShape(Plane{vmath.Vec3{0.0, 1.0, 0.0}, 0.0}).SetMaterial(Material{Color{0.5, 0.5, 0.5, 1.0}, 10, true}))
 
-	pyrMat := Material{Color{1.0, 0.6, 0.2, 1.0}, 200, false}
+	pyrMat := *(NewMaterialFromMtl("res/materials/orange.mtl"))
 	pyramid := NewPrimitiveFromObj("res/meshes/pyramid.obj")
 	pyramid.SetMaterial(pyrMat)
 	pyramid.SetSqt(vmath.Vec3{8.0, 8.0, 8.0}, vmath.QuaternionFromAxisAngle(vmath.Vec3{0.0, 1.0, 0.0}, 50), vmath.Vec3{-10.0, 0.0, -21.0})
