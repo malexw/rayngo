@@ -1,0 +1,43 @@
+{
+    "renderer": {
+        "height": 480,
+        "width": 800
+    },
+    "scene": [
+        {
+            "type": "sphere",
+            "radius": 2.5,
+            "position": [1.0, 2.5, -13.0],
+            "material": "blue.mtl"
+        },
+        {
+            "type": "sphere",
+            "radius": 1.0,
+            "position": [3.0, 1.0, -7.0],
+            "material": "green.mtl"
+        },
+        {
+            "type": "sphere",
+            "radius": 1.5,
+            "position": [-4.0, 1.5, -9.0],
+            "material": "red.mtl"
+        },
+        {
+            "type": "plane",
+            "normal": [0.0, 1.0, 0.0],
+            "distance": 0.0,
+            "material": "textured"
+        },
+        {
+            "type": "mesh",
+            "mesh": "pyramid.obj",
+            "material": "orange.mtl",
+            "position": [-10.0, 0.0, -21.0],
+            "scale": [8.0, 8.0, 8.0],
+            "rotation": {
+                "axis": [0.0, 1.0, 0.0],
+                "angle": 50.0
+            }
+        }
+    ]
+}

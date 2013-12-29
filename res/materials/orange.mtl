@@ -1,0 +1,12 @@
+newmtl orange
+Ka 1.0 0.6 0.2
+Kd 1.0 0.6 0.2
+Ks 1.0 0.6 0.2
+Ns 200.0
+d 1.0
+illum 2
+#map_Ka default.png
+#map_Kd default.png
+#map_Ks default.png
+#map_d default.png
+#map_bump normal_map.png
