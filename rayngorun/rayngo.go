@@ -7,30 +7,45 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"github.com/cheggaaa/pb"
 	"github.com/malexw/rayngo"
 	"github.com/malexw/vmath"
 )
 
 
 func main() {
-	width, height := 800, 480
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	conf := rayngo.Config{480, 800, false, 64}
+	pxCount := conf.Width * conf.Height
+
+	dofAtten := 1.0 / float64(conf.DofRayCount)
+
+	progressBar := pb.StartNew(pxCount)
+	progressBar.ShowSpeed = true
+	progressBar.Width = 100
+
+	img := image.NewRGBA(image.Rect(0, 0, conf.Width, conf.Height))
 
 	scene := rayngo.NewSceneFromFile("res/scene")
 
-	for y := 0; y < height; y += 1 {
-		for x := 0; x < width; x += 1 {
-			// Final loop for depth of field. Do n samples per pixel and average the results
-			dofAtten := 1.0 / 64.0
+	for y := 0; y < conf.Height; y += 1 {
+		for x := 0; x < conf.Width; x += 1 {
 			accumulatedColor := rayngo.Color{0.0, 0.0, 0.0, 1.0}
-			ray := rayGen(x, y, width, height, 40)
-			for n := 0; n < 64; n += 1 {
-				dofRay := dofRayGen(ray, 14)
-				accumulatedColor = accumulatedColor.Add(collision(dofRay, scene).Attenuate(dofAtten))
+			ray := rayGen(x, y, conf.Width, conf.Height, 40)
+			// Final loop for depth of field. Do n samples per pixel and average the results
+			if conf.DofEnabled {
+				for n := 0; n < conf.DofRayCount; n += 1 {
+					dofRay := dofRayGen(ray, 14)
+					accumulatedColor = accumulatedColor.Add(collision(dofRay, scene).Attenuate(dofAtten))
+				}
+			} else {
+				accumulatedColor = collision(ray, scene)
 			}
-			img.Set(x, height-y, accumulatedColor.ToImageColor())
+			img.Set(x, conf.Height-y, accumulatedColor.ToImageColor())
+			progressBar.Increment()
 		}
 	}
+
+	progressBar.Finish()
 
 	outFile, err := os.Create("test.png")
 	if err != nil {
