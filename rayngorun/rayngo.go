@@ -7,7 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"github.com/cheggaaa/pb"
+	"github.com/malexw/pb"
 	"github.com/malexw/rayngo"
 	"github.com/malexw/vmath"
 )
@@ -21,7 +21,7 @@ func main() {
 
 	progressBar := pb.StartNew(pxCount)
 	progressBar.ShowSpeed = true
-	progressBar.Width = 100
+	progressBar.MaxWidth = 100
 
 	img := image.NewRGBA(image.Rect(0, 0, conf.Width, conf.Height))
 
