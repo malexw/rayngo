@@ -14,6 +14,8 @@ import (
 
 
 func main() {
+	fmt.Printf("I'm sorry for not honoring the wave nature of light.\n")
+
 	conf := rayngo.Config{480, 800, false, 64}
 	pxCount := conf.Width * conf.Height
 
