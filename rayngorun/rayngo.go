@@ -14,8 +14,6 @@ import (
 
 
 func main() {
-	fmt.Printf("I'm sorry for not honoring the wave nature of light.\n")
-
 	conf := rayngo.Config{480, 800, false, 64}
 	pxCount := conf.Width * conf.Height
 
@@ -29,21 +27,18 @@ func main() {
 
 	scene := rayngo.NewSceneFromFile("res/scene")
 
-	for y := 0; y < conf.Height; y += 1 {
-		for x := 0; x < conf.Width; x += 1 {
-			accumulatedColor := rayngo.Color{0.0, 0.0, 0.0, 1.0}
-			ray := rayGen(x, y, conf.Width, conf.Height, 40)
-			// Final loop for depth of field. Do n samples per pixel and average the results
-			if conf.DofEnabled {
-				for n := 0; n < conf.DofRayCount; n += 1 {
-					dofRay := dofRayGen(ray, 14)
-					accumulatedColor = accumulatedColor.Add(collision(dofRay, scene).Attenuate(dofAtten))
-				}
-			} else {
-				accumulatedColor = collision(ray, scene)
-			}
-			img.Set(x, conf.Height-y, accumulatedColor.ToImageColor())
-			progressBar.Increment()
+	out := make(chan TraceResult)
+	go calcColorForPixelRange(0, conf.Width, 0, conf.Height, scene, dofAtten, conf, out)
+
+	recvd := 0
+
+	for {
+		res := <- out
+		img.Set(res.x, conf.Height-res.y, res.color.ToImageColor())
+		progressBar.Increment()
+		recvd += 1
+		if recvd >= pxCount {
+			break
 		}
 	}
 
@@ -55,6 +50,30 @@ func main() {
 	}
 	defer outFile.Close()
 	png.Encode(outFile, img)
+}
+
+func calcColorForPixelRange(xstart int, xend int, ystart int, yend int, scene *rayngo.Scene, dofAtten float64, conf rayngo.Config, out chan<- TraceResult) {
+	for y := ystart; y < yend; y += 1 {
+		for x := xstart; x < xend; x += 1 {
+			accumulatedColor := rayngo.Color{0.0, 0.0, 0.0, 1.0}
+			ray := rayGen(x, y, conf.Width, conf.Height, 40)
+			// Final loop for depth of field. Do n samples per pixel and average the results
+			if conf.DofEnabled {
+				for n := 0; n < conf.DofRayCount; n += 1 {
+					dofRay := dofRayGen(ray, 14)
+					accumulatedColor = accumulatedColor.Add(collision(dofRay, scene).Attenuate(dofAtten))
+				}
+			} else {
+				accumulatedColor = collision(ray, scene)
+			}
+			out <- TraceResult{x, y, accumulatedColor}
+		}
+	}
+}
+
+type TraceResult struct {
+	x, y int
+	color rayngo.Color
 }
 
 func rayGen(x int, y int, width int, height int, fov int) rayngo.Ray {

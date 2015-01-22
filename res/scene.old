@@ -44,6 +44,17 @@
             "radius": 3.0,
             "position": [20.0, 3.0, -50.0],
             "material": "yellow.mtl"
+        },
+        {
+            "type": "mesh",
+            "mesh": "out.obj",
+            "material": "grey.mtl",
+            "position": [-16.0, -0.5, 7.0],
+            "scale": [1.0, 1.0, 1.0],
+            "rotation": {
+                "axis": [-1.0, 0.0, 0.0],
+                "angle": 90.0
+            }
         }
     ]
 }
